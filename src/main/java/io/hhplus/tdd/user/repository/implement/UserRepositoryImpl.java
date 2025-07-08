@@ -1,7 +1,7 @@
 package io.hhplus.tdd.user.repository.implement;
 
 import io.hhplus.tdd.database.UserTable;
-import io.hhplus.tdd.user.User;
+import io.hhplus.tdd.user.model.User;
 import io.hhplus.tdd.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

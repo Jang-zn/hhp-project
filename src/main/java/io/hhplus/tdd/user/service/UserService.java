@@ -1,8 +1,8 @@
 package io.hhplus.tdd.user.service;
 
-import io.hhplus.tdd.user.User;
-
 import java.util.Optional;
+
+import io.hhplus.tdd.user.model.User;
 
 public interface UserService {
     User signup(String name);

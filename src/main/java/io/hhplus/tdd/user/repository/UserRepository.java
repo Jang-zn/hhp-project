@@ -1,8 +1,8 @@
 package io.hhplus.tdd.user.repository;
 
-import io.hhplus.tdd.user.User;
-
 import java.util.Optional;
+
+import io.hhplus.tdd.user.model.User;
 
 public interface UserRepository {
     User save(String name);

@@ -1,7 +1,8 @@
 package io.hhplus.tdd.database;
 
-import io.hhplus.tdd.user.User;
 import org.springframework.stereotype.Component;
+
+import io.hhplus.tdd.user.model.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +16,7 @@ public class UserTable {
     public User insert(String name) throws InterruptedException {
         throttle(100);
         long newId = cursor.getAndIncrement();
-        User user = new User(newId, name);
+        User user = User.of(newId, name);
         table.put(newId, user);
         return user;
     }

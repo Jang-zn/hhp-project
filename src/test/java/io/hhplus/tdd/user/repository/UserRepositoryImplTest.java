@@ -2,22 +2,20 @@ package io.hhplus.tdd.user.repository;
 
 import io.hhplus.tdd.database.UserTable;
 import io.hhplus.tdd.user.repository.implement.UserRepositoryImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("UserRepository 구현체 단위 테스트")
+@DisplayName("UserRepository 구현체 테스트")
 public class UserRepositoryImplTest {
 
-    @Mock
-    private UserTable userTable;
-
-    @InjectMocks
     private UserRepositoryImpl userRepository;
+
+    @BeforeEach
+    void setUp() {
+        UserTable userTable = new UserTable();
+        userRepository = new UserRepositoryImpl(userTable);
+    }
 
     @Test
     @DisplayName("사용자 저장 테스트")
