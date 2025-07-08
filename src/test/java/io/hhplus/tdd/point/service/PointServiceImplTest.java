@@ -28,12 +28,7 @@ class PointServiceImplTest {
 
     private PointService pointService;
 
-    @BeforeEach
-    void setUp() {
-        UserPointRepository userPointRepository = new UserPointRepositoryImpl(new UserPointTable());
-        PointHistoryRepository pointHistoryRepository = new PointHistoryRepositoryImpl(new PointHistoryTable());
-        pointService = new PointServiceImpl(userPointRepository, pointHistoryRepository);
-    }
+
     private static Stream<Arguments> invalidIdPointHistoryArguments() {
         return Stream.of(
                 Arguments.of(-1L, 100L, TransactionType.CHARGE),
@@ -47,9 +42,26 @@ class PointServiceImplTest {
         );
     }
 
+
+    @BeforeEach
+    void setUp() {
+        UserPointRepository userPointRepository = new UserPointRepositoryImpl(new UserPointTable());
+        PointHistoryRepository pointHistoryRepository = new PointHistoryRepositoryImpl(new PointHistoryTable());
+        pointService = new PointServiceImpl(userPointRepository, pointHistoryRepository);
+    }
+    
+
+    
+
+    @Test
+    @DisplayName("포인트 충전 테스트")
+    void chargePoint() {
+        // given & when & then
+        // TODO: 포인트 충전 로직 테스트
+    }
     @ParameterizedTest
     @MethodSource("invalidIdPointHistoryArguments")
-    @DisplayName("실패케이스: 유효하지 않은 형식의 userId(0, 음수)로 요청 시 USER_NOT_FOUND 에러를 반환한다")
+    @DisplayName("실패케이스: 유효하지 않은 형식의 userId(0, 음수)로 조회 요청 시 USER_NOT_FOUND 에러를 반환한다")
     void chargeOrUse_throwsException_withInvalidUserId(long invalidUserId, long amount, TransactionType transactionType) {
         // given & when & then
         assertThatThrownBy(() -> {
@@ -64,7 +76,7 @@ class PointServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("invalidAmountPointHistoryArguments")
-    @DisplayName("실패케이스: 유효하지 않은 amount(0, 음수)로 요청 시 INVALID_AMOUNT 에러를 반환한다")
+    @DisplayName("실패케이스: 유효하지 않은 amount(0, 음수)로 충전 및 사용 요청 시 INVALID_AMOUNT 에러를 반환한다")
     void chargeOrUse_throwsException_withInvalidAmount(long userId, long invalidAmount, TransactionType transactionType) {
         // given & when & then
         assertThatThrownBy(() -> {
@@ -75,13 +87,6 @@ class PointServiceImplTest {
             }
         }).isInstanceOf(IllegalArgumentException.class)
           .hasMessage(ErrorCode.INVALID_AMOUNT.getMessage());
-    }
-
-    @Test
-    @DisplayName("포인트 충전 테스트")
-    void chargePoint() {
-        // given & when & then
-        // TODO: 포인트 충전 로직 테스트
     }
 
     @Test

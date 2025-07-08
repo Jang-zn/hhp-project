@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
@@ -22,6 +22,13 @@ import static org.assertj.core.api.Assertions.*;
 class PointHistoryRepositoryImplTest {
     private PointHistoryTable pointHistoryTable;
     private PointHistoryRepositoryImpl pointHistoryRepository;
+    
+    private static Stream<Arguments> saveSuccessPointHistoryArguments() {
+        return Stream.of(
+                Arguments.of(1L, 100L, TransactionType.CHARGE),
+                Arguments.of(2L, 200L, TransactionType.USE)
+        );
+    }
 
     @BeforeEach
     void setUp() {
@@ -29,12 +36,7 @@ class PointHistoryRepositoryImplTest {
         pointHistoryRepository = new PointHistoryRepositoryImpl(pointHistoryTable);
     }
 
-    private static Stream<Arguments> saveSuccessPointHistoryArguments() {
-        return Stream.of(
-                Arguments.of(1L, 100L, TransactionType.CHARGE),
-                Arguments.of(2L, 200L, TransactionType.USE)
-        );
-    }
+
 
     @ParameterizedTest
     @MethodSource("saveSuccessPointHistoryArguments")
@@ -60,7 +62,7 @@ class PointHistoryRepositoryImplTest {
         pointHistoryRepository.save(2L, 500L, TransactionType.CHARGE); // 다른 유저의 데이터
 
         // when
-        var histories = pointHistoryRepository.findByUserId(userId);
+        List<PointHistory> histories = pointHistoryRepository.findByUserId(userId);
 
         // then
         assertThat(histories).hasSize(3);
@@ -74,7 +76,7 @@ class PointHistoryRepositoryImplTest {
         long userIdWithNoHistory = 1L;
         
         // when
-        var histories = pointHistoryRepository.findByUserId(userIdWithNoHistory);
+        List<PointHistory> histories = pointHistoryRepository.findByUserId(userIdWithNoHistory);
 
         // then
         assertThat(histories).isEmpty();
