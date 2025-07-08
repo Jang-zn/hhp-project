@@ -38,7 +38,7 @@ class PointHistoryRepositoryImplTest {
 
     @ParameterizedTest
     @MethodSource("saveSuccessPointHistoryArguments")
-    @DisplayName("포인트 이력 저장 테스트")
+    @DisplayName("포인트 충전 및 사용 이력을 성공적으로 저장")
     void save(long userId, long amount, TransactionType transactionType) {
         // given & when
         PointHistory savePointHistory = pointHistoryRepository.save(userId, amount, transactionType);
@@ -49,42 +49,40 @@ class PointHistoryRepositoryImplTest {
         assertThat(savePointHistory.updateMillis()).isGreaterThan(0);
     }
 
-
-
     @Test
-    @DisplayName("유저별 포인트 이력 목록 조회 테스트")
+    @DisplayName("userId에 해당하는 유저의 모든 포인트 이력을 정확히 조회")
     void findAllByUserId() {
         // given
-        
+        long userId = 1L;
+        pointHistoryRepository.save(userId, 1000L, TransactionType.CHARGE);
+        pointHistoryRepository.save(userId, 200L, TransactionType.USE);
+        pointHistoryRepository.save(userId, 300L, TransactionType.CHARGE);
+        pointHistoryRepository.save(2L, 500L, TransactionType.CHARGE); // 다른 유저의 데이터
+
         // when
-        
+        var histories = pointHistoryRepository.findByUserId(userId);
+
         // then
+        assertThat(histories).hasSize(3);
+        assertThat(histories).extracting(PointHistory::userId).containsOnly(userId);
     }
 
     @Test
     @DisplayName("포인트 이력이 없는 유저 조회 시 빈 목록을 반환한다")
     void findEmptyByUserId() {
         // given
-
+        long userIdWithNoHistory = 1L;
+        
         // when
+        var histories = pointHistoryRepository.findByUserId(userIdWithNoHistory);
 
         // then
+        assertThat(histories).isEmpty();
     }
 
     @Test
     @DisplayName("동시에 여러 저장 요청이 와도 모두 정확히 저장된다")
     void saveAll_whenConcurrentRequest() throws InterruptedException {
-        // given
-
-        // when
-
-        // then
-    }
-
-    @ParameterizedTest
-    @ValueSource(longs = {0L, -1L,})
-    @DisplayName("실패케이스: 유효하지 않은 userId로 조회 시 에러코드를 반환한다")
-    void findAllByInvalidUserId(long invalidUserId) {
         // given
 
         // when
