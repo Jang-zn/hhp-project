@@ -14,11 +14,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@WebMvcTest(PointServiceImpl.class)
 @DisplayName("PointService 단위 테스트")
 @ExtendWith(MockitoExtension.class)
 class PointServiceImplTest {

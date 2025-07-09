@@ -5,8 +5,10 @@ import io.hhplus.tdd.user.repository.implement.UserRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
-@DisplayName("UserRepository 구현체 테스트")
+@WebMvcTest(UserRepositoryImpl.class)
+@DisplayName("UserRepositoryImpl 단위 테스트")
 public class UserRepositoryImplTest {
 
     private UserRepositoryImpl userRepository;

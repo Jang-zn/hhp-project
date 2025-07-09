@@ -7,8 +7,10 @@ import io.hhplus.tdd.user.service.implement.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
-@DisplayName("UserService 통합 테스트")
+@WebMvcTest(UserServiceImpl.class)
+@DisplayName("UserServiceImpl 단위 테스트")
 public class UserServiceImplTest {
 
     private UserService userService;
