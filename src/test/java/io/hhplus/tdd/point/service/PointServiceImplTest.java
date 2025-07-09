@@ -61,8 +61,8 @@ class PointServiceImplTest {
     }
     @ParameterizedTest
     @MethodSource("invalidIdPointHistoryArguments")
-    @DisplayName("실패케이스: 유효하지 않은 형식의 userId(0, 음수)로 조회 요청 시 USER_NOT_FOUND 에러를 반환한다")
-    void chargeOrUse_throwsException_withInvalidUserId(long invalidUserId, long amount, TransactionType transactionType) {
+    @DisplayName("실패케이스 :  유효하지 않은 형식의 userId(0, 음수)로 요청 시 예외를 반환한다")
+    void chargeOrUse_throwsException_withInvalidUserIdFormat(long invalidUserId, long amount, TransactionType transactionType) {
         // given & when & then
         assertThatThrownBy(() -> {
             if (transactionType == TransactionType.CHARGE) {
@@ -101,5 +101,79 @@ class PointServiceImplTest {
     void getPointHistories() {
         // given & when & then
         // TODO: 포인트 이력 조회 로직 테스트
+    }
+
+    @Test
+    @DisplayName("실패케이스 :  잔액보다 큰 금액을 사용 요청 시 예외를 반환한다")
+    void use_throwsException_whenBalanceIsInsufficient() {
+        // given
+
+        // when & then
+
+    }
+
+    @Test
+    @DisplayName("실패케이스 : 충전 시 최대 보유 가능 포인트를 초과할 경우 예외를 반환한다")
+    void charge_throwsException_whenItExceedsMaxLimit() {
+        // given
+
+        // when & then
+
+    }
+
+    @Test
+    @DisplayName("실패케이스 : 산술 오버플로우가 발생할 수 있는 값으로 충전 시 예외를 반환한다")
+    void charge_throwsException_onArithmeticOverflow() {
+        // given
+
+        // when & then
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("transactionType")
+    @DisplayName("실패케이스 : 포인트 이력 저장 실패 시 예외를 반환한다")
+    void chargeOrUse_throwsException_whenHistorySaveFails(TransactionType transactionType) {
+        // given
+
+        // when & then
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("transactionType")
+    @DisplayName("실패케이스 :  조회된 사용자의 포인트가 음수일 경우 예외를 반환한다")
+    void chargeOrUse_throwsException_whenPointIsNegative(TransactionType transactionType) {
+        // given
+
+        // when & then
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("transactionType")
+    @DisplayName("실패케이스 :  DB에 존재하지 않는 유저로 요청 시 예외를 반환한다")
+    void chargeOrUse_throwsException_whenUserNotFound(TransactionType transactionType) {
+        // given
+
+        // when & then
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("transactionType")
+    @DisplayName("실패케이스 :  비활성화/탈퇴한 유저로 요청 시 예외를 반환한다")
+    void chargeOrUse_throwsException_whenUserIsInactive(TransactionType transactionType) {
+        // given
+
+        // when & then
+
+    }
+
+    private static Stream<Arguments> transactionType() {
+        return Stream.of(
+                Arguments.of(TransactionType.CHARGE),
+                Arguments.of(TransactionType.USE)
+        );
     }
 } 
