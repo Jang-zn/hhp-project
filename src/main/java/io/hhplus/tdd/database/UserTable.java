@@ -21,6 +21,22 @@ public class UserTable {
         return user;
     }
 
+    public User updateName(Long id, String newName) {
+        throttle(50);
+        User existingUser = table.get(id);
+        User updatedUser = new User(existingUser.id(), newName, existingUser.status());
+        table.put(id, updatedUser);
+        return updatedUser;
+    }
+
+    public User updateStatus(Long id, io.hhplus.tdd.common.constants.UserStatus status) {
+        throttle(50);
+        User existingUser = table.get(id);
+        User updatedUser = existingUser.withStatus(status);
+        table.put(id, updatedUser);
+        return updatedUser;
+    }
+
     public User selectById(Long id) {
         throttle(50);
         return table.get(id);

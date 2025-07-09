@@ -28,4 +28,14 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> findById(long id) {
         return Optional.ofNullable(userTable.selectById(id));
     }
+
+    @Override
+    public User updateName(long id, String name) {
+        return userTable.updateName(id, name);
+    }
+
+    @Override
+    public User updateStatus(long id, io.hhplus.tdd.common.constants.UserStatus status) {
+        return userTable.updateStatus(id, status);
+    }
 } 
