@@ -1,16 +1,16 @@
 package io.hhplus.tdd.point.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.hhplus.tdd.point.service.PointService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-@AutoConfigureWebMvc
-@DisplayName("PointController 통합 테스트")
+@WebMvcTest(controllers = PointController.class)
+@DisplayName("PointController 단위 테스트")
 class PointControllerTest {
 
     @Autowired
@@ -19,8 +19,11 @@ class PointControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private PointService pointService;
+
     @Test
-    @DisplayName("포인트 조회 API 테스트")
+    @DisplayName("성공: 유저의 포인트를 정상적으로 조회한다")
     void getPoint() throws Exception {
         // given
 
@@ -28,19 +31,19 @@ class PointControllerTest {
     }
 
     @Test
-    @DisplayName("포인트 충전 API 테스트")
+    @DisplayName("성공: 포인트를 정상적으로 충전한다")
     void chargePoint() throws Exception {
         // given & when & then
     }
 
     @Test
-    @DisplayName("포인트 사용 API 테스트")
+    @DisplayName("성공: 포인트를 정상적으로 사용한다")
     void usePoint() throws Exception {
         // given & when & then
     }
 
     @Test
-    @DisplayName("포인트 이력 조회 API 테스트")
+    @DisplayName("성공: 유저의 포인트 이력을 정상적으로 조회한다")
     void getPointHistories() throws Exception {
         // given & when & then
     }
