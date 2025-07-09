@@ -35,14 +35,14 @@ public class UserServiceImplTest {
     void signup() {
         // given
         String name = "user1";
-        User stub = User.of(1L, name);
-        when(userRepository.save(name)).thenReturn(stub);
+        User mockUser = User.of(1L, name);
+        when(userRepository.save(name)).thenReturn(mockUser);
 
         // when
         User saved = userService.signup(name);
 
         // then
-        assertThat(saved).isEqualTo(stub);
+        assertThat(saved).isEqualTo(mockUser);
         verify(userRepository).save(name);
     }
 
