@@ -44,7 +44,7 @@ public class UserControllerTest {
         given(userService.signup(name)).willReturn(expectedUser);
 
         // when & then
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("name", name))))
                 .andExpect(status().isCreated())
@@ -64,7 +64,7 @@ public class UserControllerTest {
         given(userService.findUserById(userId)).willReturn(Optional.of(user));
 
         // when & then
-        mockMvc.perform(get("/users/{id}", userId))
+        mockMvc.perform(get("/user/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.name").value(name));
@@ -82,7 +82,7 @@ public class UserControllerTest {
         given(userService.updateName(userId, newName)).willReturn(updatedUser);
 
         // when & then
-        mockMvc.perform(patch("/users/{id}", userId)
+        mockMvc.perform(patch("/user/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("name", newName))))
                 .andExpect(status().isOk())
@@ -102,7 +102,7 @@ public class UserControllerTest {
         given(userService.retireUser(userId)).willReturn(retiredUser);
 
         // when & then
-        mockMvc.perform(delete("/users/{id}", userId))
+        mockMvc.perform(delete("/user/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.status").value(UserStatus.RETIRED.name()));
