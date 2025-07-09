@@ -25,4 +25,14 @@ public class UserServiceImpl implements UserService {
     public Optional<User> findUserById(long id) {
         return Optional.empty();
     }
+
+    @Override
+    public User updateName(long id, String newName) {
+        return null;
+    }
+
+    @Override
+    public User retireUser(long id) {
+        return null;
+    }
 } 
