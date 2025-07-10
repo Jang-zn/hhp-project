@@ -107,7 +107,7 @@ class PointControllerTest {
         given(pointService.getPointHistories(userId)).willReturn(expectedHistories);
 
         // when & then
-        mockMvc.perform(get("/point/{id}/histories", userId))
+        mockMvc.perform(get("/point/{id}/history", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -125,7 +125,7 @@ class PointControllerTest {
         given(pointService.getPointHistories(anyLong())).willReturn(Collections.emptyList());
 
         // when & then
-        mockMvc.perform(get("/point/{id}/histories", userId))
+        mockMvc.perform(get("/point/{id}/history", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0));
