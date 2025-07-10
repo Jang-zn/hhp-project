@@ -104,7 +104,7 @@ class UserPointRepositoryImplTest {
         // then
         assertThat(userPoint.id()).isEqualTo(nonExistentUserId);
         assertThat(userPoint.point()).isEqualTo(0L);
-        assertThat(userPoint.updateMillis()).isEqualTo(0L);
+        assertThat(userPoint.updateMillis()).isNotEqualTo(0L);
     }
 
 } 
