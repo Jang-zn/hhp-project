@@ -15,27 +15,21 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserTable userTable;
 
     @Override
-    public User save(String name) {
+    public User insert(String name) {
         try {
             return userTable.insert(name);
         } catch (InterruptedException e) {
-            // In a real application, a more specific exception should be used.
-            throw new RuntimeException("Error while saving user", e);
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Optional<User> findById(long id) {
-        return Optional.ofNullable(userTable.selectById(id));
+    public User update(User user) {
+        return userTable.update(user);
     }
 
     @Override
-    public User updateName(long id, String name) {
-        return userTable.updateName(id, name);
-    }
-
-    @Override
-    public User updateStatus(long id, io.hhplus.tdd.common.constants.UserStatus status) {
-        return userTable.updateStatus(id, status);
+    public User findById(long id) {
+        return userTable.selectById(id);
     }
 } 

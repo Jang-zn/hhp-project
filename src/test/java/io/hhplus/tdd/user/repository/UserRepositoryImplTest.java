@@ -19,72 +19,51 @@ class UserRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        // 각 테스트는 격리된 UserTable 인스턴스에서 실행된다.
         userRepository = new UserRepositoryImpl(new UserTable());
     }
 
     @Test
-    @DisplayName("성공: 사용자를 저장하고 ID로 조회한다")
-    void saveAndFindById() {
+    @DisplayName("성공: 사용자 정보를 저장한다")
+    void save() {
         // given
-        String name = "Alice";
+        String name = "tester";
 
         // when
-        User savedUser = userRepository.save(name);
-        Optional<User> foundUserOpt = userRepository.findById(savedUser.id());
+        User user = userRepository.insert(name);
 
         // then
-        assertThat(foundUserOpt).isPresent();
-        User foundUser = foundUserOpt.get();
-
-        assertThat(foundUser.id()).isEqualTo(savedUser.id());
-        assertThat(foundUser.name()).isEqualTo(name);
-        assertThat(foundUser.status()).isEqualTo(UserStatus.ACTIVE);
+        assertThat(user.name()).isEqualTo(name);
+        assertThat(user.status()).isEqualTo(UserStatus.ACTIVE);
     }
 
     @Test
-    @DisplayName("실패: 존재하지 않는 ID로 조회 시 빈 Optional을 반환한다")
-    void findById_whenUserNotExists_returnsEmpty() {
+    @DisplayName("성공: 아이디로 사용자를 조회한다")
+    void findById() {
         // given
-        long nonExistentId = 999L;
+        User savedUser = userRepository.insert("tester");
 
         // when
-        Optional<User> foundUserOpt = userRepository.findById(nonExistentId);
+        User user = userRepository.findById(savedUser.id());
 
         // then
-        assertThat(foundUserOpt).isEmpty();
+        assertThat(user.id()).isEqualTo(savedUser.id());
+        assertThat(user.name()).isEqualTo(savedUser.name());
     }
 
+    @DisplayName("유저 정보 수정 테스트")
     @Test
-    @DisplayName("성공: 사용자 이름을 정상적으로 수정한다")
-    void updateName() {
+    void update() {
         // given
-        User user = userRepository.save("Bob");
-        String newName = "BobUpdated";
+        User user = userRepository.insert("tester");
+        String newName = "tester-2";
+        UserStatus newStatus = UserStatus.RETIRED;
 
         // when
-        User updatedUser = userRepository.updateName(user.id(), newName);
-        Optional<User> refetchedUserOpt = userRepository.findById(user.id());
+        User updatedUser = userRepository.update(new User(user.id(), newName, newStatus));
 
         // then
+        assertThat(updatedUser.id()).isEqualTo(user.id());
         assertThat(updatedUser.name()).isEqualTo(newName);
-        assertThat(refetchedUserOpt).isPresent();
-        assertThat(refetchedUserOpt.get().name()).isEqualTo(newName);
-    }
-
-    @Test
-    @DisplayName("성공: 사용자 상태를 정상적으로 수정한다")
-    void updateStatus() {
-        // given
-        User user = userRepository.save("Charlie");
-
-        // when
-        User retiredUser = userRepository.updateStatus(user.id(), UserStatus.RETIRED);
-        Optional<User> refetchedUserOpt = userRepository.findById(user.id());
-
-        // then
-        assertThat(retiredUser.status()).isEqualTo(UserStatus.RETIRED);
-        assertThat(refetchedUserOpt).isPresent();
-        assertThat(refetchedUserOpt.get().status()).isEqualTo(UserStatus.RETIRED);
+        assertThat(updatedUser.status()).isEqualTo(newStatus);
     }
 } 

@@ -17,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.argThat;
 
 
 @DisplayName("UserServiceImpl 단위 테스트")
@@ -31,19 +33,21 @@ public class UserServiceImplTest {
         userService = new UserServiceImpl(userRepository);
     }
 
+    @DisplayName("성공: 유저 생성")
     @Test
     void signup() {
         // given
         String name = "user1";
-        User mockUser = User.of(1L, name);
-        when(userRepository.save(name)).thenReturn(mockUser);
+        User expectedUser = new User(1L, name, UserStatus.ACTIVE);
+        given(userRepository.insert(name)).willReturn(expectedUser);
 
         // when
-        User saved = userService.signup(name);
+        User user = userService.signup(name);
 
         // then
-        assertThat(saved).isEqualTo(mockUser);
-        verify(userRepository).save(name);
+        assertThat(user.name()).isEqualTo(name);
+        assertThat(user.status()).isEqualTo(UserStatus.ACTIVE);
+        verify(userRepository).insert(name);
     }
 
     @Test
@@ -60,31 +64,45 @@ public class UserServiceImplTest {
         assertThat(found.get()).isEqualTo(saved);
     }
 
-    @Test
     @DisplayName("성공: 이름 변경")
+    @Test
     void updateName() {
         // given
-        User saved = userService.signup("user1");
+        long userId = 1L;
+        String originalName = "user1";
         String newName = "userUpdated";
+        User user = new User(userId, originalName, UserStatus.ACTIVE);
+        User expectedUser = new User(userId, newName, UserStatus.ACTIVE);
+
+        given(userRepository.findById(userId)).willReturn(user);
+        given(userRepository.update(any(User.class))).willReturn(expectedUser);
 
         // when
-        User updated = userService.updateName(saved.id(), newName);
+        User updatedUser = userService.updateName(userId, newName);
 
         // then
-        assertThat(updated.id()).isEqualTo(saved.id());
-        assertThat(updated.name()).isEqualTo(newName);
+        assertThat(updatedUser.name()).isEqualTo(newName);
+        verify(userRepository).findById(userId);
+        verify(userRepository).update(argThat(u -> u.id() == userId && u.name().equals(newName)));
     }
 
     @Test
     @DisplayName("성공: 사용자 탈퇴")
     void retireUser() {
         // given
-        User saved = userService.signup("retiredUser");
+        long userId = 1L;
+        User user = new User(userId, "tester", UserStatus.ACTIVE);
+        User expectedUser = new User(userId, "tester", UserStatus.RETIRED);
+
+        given(userRepository.findById(userId)).willReturn(user);
+        given(userRepository.update(any(User.class))).willReturn(expectedUser);
 
         // when
-        User retired = userService.retireUser(saved.id());
+        User retiredUser = userService.retireUser(userId);
 
         // then
-        assertThat(retired.status()).isEqualTo(UserStatus.RETIRED);
+        assertThat(retiredUser.status()).isEqualTo(UserStatus.RETIRED);
+        verify(userRepository).findById(userId);
+        verify(userRepository).update(argThat(u -> u.id() == userId && u.status() == UserStatus.RETIRED));
     }
 } 
