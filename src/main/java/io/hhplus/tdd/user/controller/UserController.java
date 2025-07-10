@@ -25,7 +25,14 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> signup(@RequestBody User user) {
+    public ResponseEntity<?> signup(@RequestBody User user) {
+        if (user.name() == null || user.name().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                new io.hhplus.tdd.common.ErrorResponse(
+                    io.hhplus.tdd.common.constants.ErrorCode.INVALID_NAME.getCode(),
+                    io.hhplus.tdd.common.constants.ErrorCode.INVALID_NAME.getMessage())
+            );
+        }
         User savedUser = userService.signup(user.name());
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
@@ -37,7 +44,14 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<User> updateName(@PathVariable long id, @RequestBody User user) {
+    public ResponseEntity<?> updateName(@PathVariable long id, @RequestBody User user) {
+        if (user.name() == null || user.name().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                new io.hhplus.tdd.common.ErrorResponse(
+                    io.hhplus.tdd.common.constants.ErrorCode.INVALID_NAME.getCode(),
+                    io.hhplus.tdd.common.constants.ErrorCode.INVALID_NAME.getMessage())
+            );
+        }
         User updatedUser = userService.updateName(id, user.name());
         return ResponseEntity.ok(updatedUser);
     }
