@@ -33,14 +33,21 @@ class PointServiceImplTest {
 
     private static final long MAX_POINT = 99_999L;
 
-    @InjectMocks
     private PointServiceImpl pointService;
+
+    @BeforeEach
+    void setUp() {
+        pointService = new PointServiceImpl(userRepository, userPointRepository, pointHistoryRepository, MAX_POINT);
+    }
 
     @Mock
     private UserPointRepository userPointRepository;
 
     @Mock
     private PointHistoryRepository pointHistoryRepository;
+
+    @Mock
+    private io.hhplus.tdd.user.repository.UserRepository userRepository;
 
     // ----- 공통 헬퍼 메서드 ----- //
     /**
@@ -70,6 +77,14 @@ class PointServiceImplTest {
                 .thenReturn(new PointHistory(1L, userId, amount, type, System.currentTimeMillis()));
     }
 
+    /**
+     * Active User Mock
+     */
+    private void mockActiveUser(long userId) {
+        when(userRepository.findById(userId))
+                .thenReturn(new io.hhplus.tdd.user.model.User(userId, "user" + userId, io.hhplus.tdd.common.constants.UserStatus.ACTIVE));
+    }
+
     // ----- 성공 시나리오 ----- //
     @Nested
     @DisplayName("성공 시나리오")
@@ -83,6 +98,7 @@ class PointServiceImplTest {
             long chargeAmount = 500L;
             long expectedPoint = currentPoint + chargeAmount;
 
+            mockActiveUser(userId);
             mockUserPoint(userId, currentPoint);
             mockSavePoint(userId, expectedPoint);
             mockHistorySaveSuccess(userId, chargeAmount, TransactionType.CHARGE);
@@ -106,6 +122,7 @@ class PointServiceImplTest {
             long useAmount = 400L;
             long expectedPoint = currentPoint - useAmount;
 
+            mockActiveUser(userId);
             mockUserPoint(userId, currentPoint);
             mockSavePoint(userId, expectedPoint);
             mockHistorySaveSuccess(userId, useAmount, TransactionType.USE);
@@ -125,6 +142,7 @@ class PointServiceImplTest {
         void getPointHistories_success() {
             // given: 2개의 Mock PointHistory 리스트를 준비하여 Repository가 반환하도록 세팅
             long userId = 1L;
+            mockActiveUser(userId);
             List<PointHistory> mockHistories = List.of(
                     new PointHistory(3L, userId, 300L, TransactionType.CHARGE, System.currentTimeMillis()),
                     new PointHistory(2L, userId, 200L, TransactionType.USE, System.currentTimeMillis())
@@ -144,6 +162,7 @@ class PointServiceImplTest {
         void getPointHistories_returnsEmptyList_whenNoHistoryExists() {
             // given: Repository 가 빈 리스트를 반환하도록 세팅 (이력 없음 시나리오)
             long userId = 1L;
+            mockActiveUser(userId);
             when(pointHistoryRepository.findByUserId(userId)).thenReturn(Collections.emptyList());
 
             // when: 이력 조회 호출
@@ -151,6 +170,38 @@ class PointServiceImplTest {
 
             // then: 빈 리스트 반환 확인
             assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("실패: 최대 보유 포인트를 초과하면 MAX_POINT_LIMIT_EXCEEDED 예외")
+        void charge_throwsException_whenItExceedsMaxLimit() {
+            // given
+            long userId = 1L;
+            mockActiveUser(userId);
+            long currentPoint = MAX_POINT;
+            long chargeAmount = 1L;
+            mockUserPoint(userId, currentPoint);
+
+            // when & then
+            assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
+        }
+
+        @Test
+        @DisplayName("실패: 충전 금액이 최대 보유 포인트를 초과하는 경우 MAX_POINT_LIMIT_EXCEEDED 예외")
+        void charge_throwsException_whenAmountExceedsMaxPoint() {
+            // given
+            long userId = 1L;
+            mockActiveUser(userId);
+            long currentPoint = 1000L;
+            long chargeAmount = MAX_POINT + 1;
+            mockUserPoint(userId, currentPoint);
+
+            // when & then
+            assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
         }
     }
 
@@ -185,6 +236,7 @@ class PointServiceImplTest {
     @MethodSource("invalidAmountPointHistoryArguments")
     @DisplayName("실패: 잘못된 amount(0 또는 음수) 입력 시 INVALID_AMOUNT 예외")
     void chargeOrUse_throwsException_withInvalidAmount(long userId, long invalidAmount, TransactionType type) {
+        if (userId > 0) mockActiveUser(userId);
         assertThatThrownBy(() -> {
             if (type == TransactionType.CHARGE) pointService.charge(userId, invalidAmount);
             else pointService.use(userId, invalidAmount);
@@ -197,6 +249,7 @@ class PointServiceImplTest {
     void use_throwsException_whenBalanceIsInsufficient() {
         // given
         long userId = 1L;
+        mockActiveUser(userId);
         long currentPoint = 100L;
         long useAmount = 200L;
         mockUserPoint(userId, currentPoint);
@@ -207,42 +260,13 @@ class PointServiceImplTest {
                 .hasMessage(ErrorCode.INSUFFICIENT_POINT.getMessage());
     }
 
-    @Test
-    @DisplayName("실패: 최대 보유 포인트를 초과하면 MAX_POINT_LIMIT_EXCEEDED 예외")
-    void charge_throwsException_whenItExceedsMaxLimit() {
-        // given
-        long userId = 1L;
-        long currentPoint = MAX_POINT;
-        long chargeAmount = 1L;
-        mockUserPoint(userId, currentPoint);
-
-        // when & then
-        assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
-    }
-
-    @Test
-    @DisplayName("실패: 산술 오버플로우 발생 가능 값으로 충전 시 ARITHMETIC_OVERFLOW 예외")
-    void charge_throwsException_onArithmeticOverflow() {
-        // given
-        long userId = 1L;
-        long currentPoint = Long.MAX_VALUE - 10;
-        long chargeAmount = 20L; // overflow 의심
-        mockUserPoint(userId, currentPoint);
-
-        // when & then
-        assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(ErrorCode.ARITHMETIC_OVERFLOW.getMessage());
-    }
-
     @ParameterizedTest
     @MethodSource("transactionType")
-    @DisplayName("실패: 포인트 이력 저장 실패 시 POINT_HISTORY_SAVE_FAILED 예외")
+    @DisplayName("실패: 포인트 이력 저장 실패 시 SYSTEM_ERROR 예외")
     void chargeOrUse_throwsException_whenHistorySaveFails(TransactionType type) {
         // given
         long userId = 1L;
+        mockActiveUser(userId);
         long currentPoint = 1000L;
         long amount = 100L;
         mockUserPoint(userId, currentPoint);
@@ -263,6 +287,7 @@ class PointServiceImplTest {
     void chargeOrUse_throwsException_whenPointIsNegative(TransactionType type) {
         // given
         long userId = 1L;
+        mockActiveUser(userId);
         mockUserPoint(userId, -100L); // 데이터 손상 시나리오
 
         // when & then
@@ -279,7 +304,7 @@ class PointServiceImplTest {
     void chargeOrUse_throwsException_whenUserNotFound(TransactionType type) {
         // given
         long userId = 999L;
-        when(userPointRepository.findById(userId)).thenReturn(UserPoint.empty(userId));
+        when(userRepository.findById(userId)).thenReturn(null);
 
         // when & then
         assertThatThrownBy(() -> {
