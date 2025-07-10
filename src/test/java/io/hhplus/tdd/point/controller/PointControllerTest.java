@@ -7,6 +7,9 @@ import io.hhplus.tdd.point.model.UserPoint;
 import io.hhplus.tdd.point.service.PointService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -75,6 +78,29 @@ class PointControllerTest {
         verify(pointService).charge(userId, amountToCharge);
     }
 
+    @ParameterizedTest
+    @ValueSource(longs = {0L, -100L})
+    @DisplayName("실패: 포인트 충전 - 잘못된 금액(음수/0)")
+    void chargePoint_invalidAmount_fail(Long amountToCharge) throws Exception {
+        long userId = 1L;
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(amountToCharge)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(io.hhplus.tdd.common.constants.ErrorCode.INVALID_AMOUNT.getCode()));
+    }
+
+    @Test
+    @DisplayName("실패: 포인트 충전 - null 금액")
+    void chargePoint_nullAmount_fail() throws Exception {
+        long userId = 1L;
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("null"))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType("application/problem+json"));
+    }
+
     @Test
     @DisplayName("성공: 포인트를 정상적으로 사용한다")
     void usePoint() throws Exception {
@@ -93,6 +119,29 @@ class PointControllerTest {
                 .andExpect(jsonPath("$.point").value(usedUserPoint.point()));
 
         verify(pointService).use(userId, amountToUse);
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {0L, -100L})
+    @DisplayName("실패: 포인트 사용 - 잘못된 금액(음수/0)")
+    void usePoint_invalidAmount_fail(Long amountToUse) throws Exception {
+        long userId = 1L;
+        mockMvc.perform(patch("/point/{id}/use", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(amountToUse)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value(io.hhplus.tdd.common.constants.ErrorCode.INVALID_AMOUNT.getCode()));
+    }
+
+    @Test
+    @DisplayName("실패: 포인트 사용 - null 금액")
+    void usePoint_nullAmount_fail() throws Exception {
+        long userId = 1L;
+        mockMvc.perform(patch("/point/{id}/use", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("null"))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentType("application/problem+json"));
     }
 
     @Test
