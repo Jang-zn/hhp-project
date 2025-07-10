@@ -32,10 +32,8 @@ public class PointHistoryRepositoryImpl implements PointHistoryRepository {
     public List<PointHistory> findByUserId(long userId) {
         return pointHistoryTable.selectAllByUserId(userId)
                 .stream()
-                // 최신순(최근 updateMillis → 큰 id) 정렬
-                .sorted(Comparator
-                        .comparingLong(PointHistory::updateMillis).reversed()
-                        .thenComparingLong(PointHistory::id).reversed())
+                // id 내림차순(최신 id가 먼저)
+                .sorted(Comparator.comparingLong(PointHistory::id).reversed())
                 .toList();
     }
 }
