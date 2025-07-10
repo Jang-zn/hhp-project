@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PointServiceImplTest {
 
-    private static final long MAX_POINT = 10_000L;
+    private static final long MAX_POINT = 99_999L;
 
     @InjectMocks
     private PointServiceImpl pointService;
