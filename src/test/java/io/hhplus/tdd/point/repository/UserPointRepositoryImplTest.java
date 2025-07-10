@@ -9,13 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.Arguments;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
 
-@WebMvcTest(UserPointRepositoryImpl.class)
 @DisplayName("UserPointRepositoryImpl 단위 테스트")
 class UserPointRepositoryImplTest {
     

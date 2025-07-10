@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -20,7 +19,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.*;
 
 
-@WebMvcTest(PointHistoryRepositoryImpl.class)
 @DisplayName("PointHistoryRepositoryImpl 단위 테스트")
 class PointHistoryRepositoryImplTest {
     private PointHistoryTable pointHistoryTable;
