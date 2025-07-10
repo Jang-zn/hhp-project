@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class PointServiceImpl implements PointService {
@@ -24,6 +26,8 @@ public class PointServiceImpl implements PointService {
     private final UserRepository userRepository;
     private final UserPointRepository userPointRepository;
     private final PointHistoryRepository pointHistoryRepository;
+    
+    private final Set<Long> processingUserIds = ConcurrentHashMap.newKeySet();
     
     public PointServiceImpl(
             UserRepository userRepository,
@@ -70,38 +74,46 @@ public class PointServiceImpl implements PointService {
     @Override
     @Transactional // 특정 메서드만 트랜잭션 처리
     public UserPoint charge(long id, long amount) {
-        // 1. 유저ID, 활성상태, 금액 검증
-        validateUserId(id);
-        validateActiveUser(id);
-        validateAmount(amount);
-
-        // 2. 현재 포인트 조회
-        UserPoint current = userPointRepository.findById(id);
-        if (current == null) {
-            throw new IllegalArgumentException(ErrorCode.USER_NOT_FOUND.getMessage());
+        // 동시성 제어: userId별 1건만 처리, 나머지는 중복 요청 에러
+        if (!processingUserIds.add(id)) {
+            throw new IllegalArgumentException(ErrorCode.DUPLICATE_REQUEST.getMessage());
         }
-
-        long currentPoint = current.point();
-        validateNonNegativePoint(currentPoint);
-
-        // 3. 최대치 도달 여부 체크 및 실제 충전액 계산
-        long newPoint = currentPoint + amount;
-        if (newPoint > maxPoint) {
-            throw new IllegalArgumentException(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
-        }
-
-        // 4. 포인트 저장
-        UserPoint saved = userPointRepository.save(id, newPoint);
-
-        // 5. 이력 저장
         try {
-            pointHistoryRepository.save(id, amount, TransactionType.CHARGE);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(ErrorCode.POINT_HISTORY_SAVE_FAILED.getMessage());
-        }
+            // 1. 유저ID, 활성상태, 금액 검증
+            validateUserId(id);
+            validateActiveUser(id);
+            validateAmount(amount);
 
-        // 6. 결과 반환
-        return saved;
+            // 2. 현재 포인트 조회
+            UserPoint current = userPointRepository.findById(id);
+            if (current == null) {
+                throw new IllegalArgumentException(ErrorCode.USER_NOT_FOUND.getMessage());
+            }
+
+            long currentPoint = current.point();
+            validateNonNegativePoint(currentPoint);
+
+            // 3. 최대치 도달 여부 체크 및 실제 충전액 계산
+            long newPoint = currentPoint + amount;
+            if (newPoint > maxPoint) {
+                throw new IllegalArgumentException(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
+            }
+
+            // 4. 포인트 저장
+            UserPoint saved = userPointRepository.save(id, newPoint);
+
+            // 5. 이력 저장
+            try {
+                pointHistoryRepository.save(id, amount, TransactionType.CHARGE);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(ErrorCode.POINT_HISTORY_SAVE_FAILED.getMessage());
+            }
+
+            // 6. 결과 반환
+            return saved;
+        } finally {
+            processingUserIds.remove(id);
+        }
     }
 
     @Override
