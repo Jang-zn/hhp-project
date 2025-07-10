@@ -97,14 +97,14 @@ class PointControllerTest {
 
     @Test
     @DisplayName("성공: 유저의 포인트 이력을 정상적으로 조회한다")
-    void getPointHistories() throws Exception {
+    void getPointHistoryList() throws Exception {
         // given
         long userId = 1L;
         List<PointHistory> expectedHistories = List.of(
                 new PointHistory(1L, userId, 1000, TransactionType.CHARGE, System.currentTimeMillis()),
                 new PointHistory(2L, userId, 200, TransactionType.USE, System.currentTimeMillis())
         );
-        given(pointService.getPointHistories(userId)).willReturn(expectedHistories);
+        given(pointService.getPointHistoryList(userId)).willReturn(expectedHistories);
 
         // when & then
         mockMvc.perform(get("/point/{id}/history", userId))
@@ -114,15 +114,15 @@ class PointControllerTest {
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].type").value(TransactionType.CHARGE.name()));
 
-        verify(pointService).getPointHistories(userId);
+        verify(pointService).getPointHistoryList(userId);
     }
 
     @Test
     @DisplayName("성공(엣지케이스): 포인트 이력이 없는 유저 조회 시 빈 배열을 반환한다")
-    void getPointHistories_whenNoHistories() throws Exception {
+    void getPointHistoryList_whenNoHistories() throws Exception {
         // given
         long userId = 2L;
-        given(pointService.getPointHistories(anyLong())).willReturn(Collections.emptyList());
+        given(pointService.getPointHistoryList(anyLong())).willReturn(Collections.emptyList());
 
         // when & then
         mockMvc.perform(get("/point/{id}/history", userId))
@@ -130,6 +130,6 @@ class PointControllerTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0));
 
-        verify(pointService).getPointHistories(userId);
+        verify(pointService).getPointHistoryList(userId);
     }
 } 
