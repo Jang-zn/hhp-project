@@ -29,7 +29,10 @@ class PointHistoryRepositoryImplTest {
     private static Stream<Arguments> saveSuccessPointHistoryArguments() {
         return Stream.of(
                 Arguments.of(1L, 100L, TransactionType.CHARGE),
-                Arguments.of(2L, 200L, TransactionType.USE)
+                Arguments.of(2L, 200L, TransactionType.USE),
+                Arguments.of(3L, 0L, TransactionType.CHARGE),
+                Arguments.of(4L, 1000L, TransactionType.USE),
+                Arguments.of(5L, 50L, TransactionType.CHARGE)
         );
     }
 
@@ -43,43 +46,105 @@ class PointHistoryRepositoryImplTest {
 
     @ParameterizedTest
     @MethodSource("saveSuccessPointHistoryArguments")
-    @DisplayName("포인트 충전 및 사용 이력을 성공적으로 저장")
+    @DisplayName("성공: 다양한 거래 데이터로 포인트 이력이 정상 저장된다")
     void save(long userId, long amount, TransactionType transactionType) {
-        // given & when
+        // given
+        long beforeSave = System.currentTimeMillis();
+        
+        // when
         PointHistory savePointHistory = pointHistoryRepository.save(userId, amount, transactionType);
+        long afterSave = System.currentTimeMillis();
+        
         // then
+        // 입력 데이터 정확성 검증
         assertThat(savePointHistory.userId()).isEqualTo(userId);
         assertThat(savePointHistory.amount()).isEqualTo(amount);
         assertThat(savePointHistory.type()).isEqualTo(transactionType);
-        assertThat(savePointHistory.updateMillis()).isGreaterThan(0);
+        
+        // Repository 기능 검증 (ID 생성, 시간 기록)
+        assertThat(savePointHistory.id()).isPositive();
+        assertThat(savePointHistory.updateMillis()).isBetween(beforeSave, afterSave);
     }
 
     @Test
-    @DisplayName("userId에 해당하는 유저의 모든 포인트 이력을 정확히 조회")
-    void findAllByUserId() {
+    @DisplayName("성공: 여러 유저의 포인트 이력이 각각 정확히 조회된다")
+    void findByUserId_multipleUsers() {
         // given
-        long userId = 1L;
-        pointHistoryRepository.save(userId, 1000L, TransactionType.CHARGE);
-        pointHistoryRepository.save(userId, 200L, TransactionType.USE);
-        pointHistoryRepository.save(userId, 300L, TransactionType.CHARGE);
-        pointHistoryRepository.save(2L, 500L, TransactionType.CHARGE); // 다른 유저의 데이터
+        long user1Id = 1L;
+        long user2Id = 2L;
+        long user3Id = 3L;
 
-        // when
-        List<PointHistory> histories = pointHistoryRepository.findByUserId(userId);
+        // user1의 이력 (2건)
+        pointHistoryRepository.save(user1Id, 1000L, TransactionType.CHARGE);
+        pointHistoryRepository.save(user1Id, 200L, TransactionType.USE);
 
-        // then
-        assertThat(histories).hasSize(3);
-        assertThat(histories).extracting(PointHistory::userId).containsOnly(userId);
+        // user2의 이력 (1건)
+        pointHistoryRepository.save(user2Id, 500L, TransactionType.CHARGE);
+
+        // user3의 이력 (3건)
+        pointHistoryRepository.save(user3Id, 800L, TransactionType.CHARGE);
+        pointHistoryRepository.save(user3Id, 300L, TransactionType.USE);
+        pointHistoryRepository.save(user3Id, 100L, TransactionType.USE);
+
+        // when & then
+        // 각 유저별로 본인 데이터만 조회되는지 검증
+        List<PointHistory> user1Histories = pointHistoryRepository.findByUserId(user1Id);
+        List<PointHistory> user2Histories = pointHistoryRepository.findByUserId(user2Id);
+        List<PointHistory> user3Histories = pointHistoryRepository.findByUserId(user3Id);
+
+        assertThat(user1Histories).hasSize(2);
+        assertThat(user1Histories).extracting(PointHistory::userId).containsOnly(user1Id);
+
+        assertThat(user2Histories).hasSize(1);
+        assertThat(user2Histories).extracting(PointHistory::userId).containsOnly(user2Id);
+
+        assertThat(user3Histories).hasSize(3);
+        assertThat(user3Histories).extracting(PointHistory::userId).containsOnly(user3Id);
     }
 
     @Test
-    @DisplayName("포인트 이력이 없는 유저 조회 시 빈 목록을 반환한다")
+    @DisplayName("성공: 포인트 이력이 없는 유저 조회 시 빈 목록을 반환한다")
     void findEmptyByUserId() {
         // given
         long userIdWithNoHistory = 1L;
         
         // when
         List<PointHistory> histories = pointHistoryRepository.findByUserId(userIdWithNoHistory);
+
+        // then
+        assertThat(histories).isEmpty();
+    }
+
+    @Test
+    @DisplayName("성공: 포인트 이력 조회 시 최신순(DESC)으로 정렬된다")
+    void findByUserId_maintainsOrder() {
+        // given
+        long userId = 1L;
+        PointHistory first = pointHistoryRepository.save(userId, 1000L, TransactionType.CHARGE);
+        PointHistory second = pointHistoryRepository.save(userId, 200L, TransactionType.USE);
+        PointHistory third = pointHistoryRepository.save(userId, 500L, TransactionType.CHARGE);
+
+        // when
+        List<PointHistory> histories = pointHistoryRepository.findByUserId(userId);
+
+        // then
+        assertThat(histories).hasSize(3);
+        // 최신순 정렬: third(가장 최근) -> second -> first(가장 오래된)
+        assertThat(histories.get(0).id()).isEqualTo(third.id());
+        assertThat(histories.get(1).id()).isEqualTo(second.id());
+        assertThat(histories.get(2).id()).isEqualTo(first.id());
+    }
+
+    @Test
+    @DisplayName("성공: 존재하지 않는 유저 ID로 조회 시 빈 목록을 반환한다")
+    void findByUserId_nonExistentUser() {
+        // given
+        long nonExistentUserId = 999L;
+        // 다른 유저의 데이터는 저장
+        pointHistoryRepository.save(1L, 1000L, TransactionType.CHARGE);
+
+        // when
+        List<PointHistory> histories = pointHistoryRepository.findByUserId(nonExistentUserId);
 
         // then
         assertThat(histories).isEmpty();
