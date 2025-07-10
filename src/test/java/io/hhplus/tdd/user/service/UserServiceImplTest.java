@@ -54,14 +54,17 @@ public class UserServiceImplTest {
     @DisplayName("성공: 사용자 조회")
     void findUserById() {
         // given
-        User saved = userService.signup("findUserByIdUser");
+        long userId = 1L;
+        User expectedUser = new User(userId, "findUserByIdUser", UserStatus.ACTIVE);
+        given(userRepository.findById(userId)).willReturn(expectedUser);
 
         // when
-        Optional<User> found = userService.findUserById(saved.id());
+        Optional<User> found = userService.findUserById(userId);
 
         // then
         assertThat(found).isPresent();
-        assertThat(found.get()).isEqualTo(saved);
+        assertThat(found.get()).isEqualTo(expectedUser);
+        verify(userRepository).findById(userId);
     }
 
     @DisplayName("성공: 이름 변경")
