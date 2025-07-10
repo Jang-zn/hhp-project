@@ -8,7 +8,7 @@ public interface PointService {
     UserPoint getPoint(long id);
     UserPoint chargePoint(long userId, long amount);
     UserPoint usePoint(long userId, long amount);
-    List<PointHistory> getPointHistories(long id);
+    List<PointHistory> getPointHistoryList(long id);
     UserPoint charge(long id, long amount);
     UserPoint use(long id, long amount);
 }

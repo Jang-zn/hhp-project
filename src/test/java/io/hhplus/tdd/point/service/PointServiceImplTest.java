@@ -132,7 +132,7 @@ class PointServiceImplTest {
             when(pointHistoryRepository.findByUserId(userId)).thenReturn(mockHistories);
 
             // when: 서비스로 이력 조회 호출
-            List<PointHistory> result = pointService.getPointHistories(userId);
+            List<PointHistory> result = pointService.getPointHistoryList(userId);
 
             // then: 리턴된 리스트가 Mock 과 동일한지 검증
             assertThat(result).isEqualTo(mockHistories);
@@ -147,7 +147,7 @@ class PointServiceImplTest {
             when(pointHistoryRepository.findByUserId(userId)).thenReturn(Collections.emptyList());
 
             // when: 이력 조회 호출
-            List<PointHistory> result = pointService.getPointHistories(userId);
+            List<PointHistory> result = pointService.getPointHistoryList(userId);
 
             // then: 빈 리스트 반환 확인
             assertThat(result).isEmpty();
