@@ -64,7 +64,7 @@ class PointIntegrationTest {
             .andExpect(jsonPath("$.point").value(charge - use));
 
         // 이력
-        mockMvc.perform(get("/point/{id}/history", userId))
+        mockMvc.perform(get("/point/{id}/histories", userId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].userId").value(userId))
             .andExpect(jsonPath("$[1].userId").value(userId));
@@ -90,7 +90,7 @@ class PointIntegrationTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(ErrorCode.USER_NOT_FOUND.getCode()))
             .andExpect(jsonPath("$.message").value(ErrorCode.USER_NOT_FOUND.getMessage()));
-        mockMvc.perform(get("/point/{id}/history", notExistUserId))
+        mockMvc.perform(get("/point/{id}/histories", notExistUserId))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value(ErrorCode.USER_NOT_FOUND.getCode()))
             .andExpect(jsonPath("$.message").value(ErrorCode.USER_NOT_FOUND.getMessage()));
@@ -178,7 +178,7 @@ class PointIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(100)))
             .andExpect(status().isOk());
-        mockMvc.perform(get("/point/{id}/history", userId))
+        mockMvc.perform(get("/point/{id}/histories", userId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].userId").value(userId))
             .andExpect(jsonPath("$[1].userId").value(userId))

@@ -49,7 +49,7 @@ public class PointController {
     /**
      * 특정 유저의 포인트 충전/이용 내역을 조회한다.
      */
-    @GetMapping("{id}/history")
+    @GetMapping("{id}/histories")
     public List<PointHistory> history(@PathVariable long id) {
         return pointService.getPointHistoryList(id);
     }

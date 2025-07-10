@@ -86,18 +86,18 @@ class PointHistoryRepositoryImplTest {
 
         // when & then
         // 각 유저별로 본인 데이터만 조회되는지 검증
-        List<PointHistory> user1Histories = pointHistoryRepository.findByUserId(user1Id);
-        List<PointHistory> user2Histories = pointHistoryRepository.findByUserId(user2Id);
-        List<PointHistory> user3Histories = pointHistoryRepository.findByUserId(user3Id);
+        List<PointHistory> user1HistoryList = pointHistoryRepository.findByUserId(user1Id);
+        List<PointHistory> user2HistoryList = pointHistoryRepository.findByUserId(user2Id);
+        List<PointHistory> user3HistoryList = pointHistoryRepository.findByUserId(user3Id);
 
-        assertThat(user1Histories).hasSize(2);
-        assertThat(user1Histories).extracting(PointHistory::userId).containsOnly(user1Id);
+        assertThat(user1HistoryList).hasSize(2);
+        assertThat(user1HistoryList).extracting(PointHistory::userId).containsOnly(user1Id);
 
-        assertThat(user2Histories).hasSize(1);
-        assertThat(user2Histories).extracting(PointHistory::userId).containsOnly(user2Id);
+        assertThat(user2HistoryList).hasSize(1);
+        assertThat(user2HistoryList).extracting(PointHistory::userId).containsOnly(user2Id);
 
-        assertThat(user3Histories).hasSize(3);
-        assertThat(user3Histories).extracting(PointHistory::userId).containsOnly(user3Id);
+        assertThat(user3HistoryList).hasSize(3);
+        assertThat(user3HistoryList).extracting(PointHistory::userId).containsOnly(user3Id);
     }
 
     @Test
@@ -107,10 +107,10 @@ class PointHistoryRepositoryImplTest {
         long userIdWithNoHistory = 1L;
         
         // when
-        List<PointHistory> histories = pointHistoryRepository.findByUserId(userIdWithNoHistory);
+        List<PointHistory> historyList = pointHistoryRepository.findByUserId(userIdWithNoHistory);
 
         // then
-        assertThat(histories).isEmpty();
+        assertThat(historyList).isEmpty();
     }
 
     @Test
@@ -123,14 +123,14 @@ class PointHistoryRepositoryImplTest {
         PointHistory third = pointHistoryRepository.save(userId, 500L, TransactionType.CHARGE);
 
         // when
-        List<PointHistory> histories = pointHistoryRepository.findByUserId(userId);
+        List<PointHistory> historyList = pointHistoryRepository.findByUserId(userId);
 
         // then
-        assertThat(histories).hasSize(3);
+        assertThat(historyList).hasSize(3);
         // 최신순 정렬: third(가장 최근) -> second -> first(가장 오래된)
-        assertThat(histories.get(0).id()).isEqualTo(third.id());
-        assertThat(histories.get(1).id()).isEqualTo(second.id());
-        assertThat(histories.get(2).id()).isEqualTo(first.id());
+        assertThat(historyList.get(0).id()).isEqualTo(third.id());
+        assertThat(historyList.get(1).id()).isEqualTo(second.id());
+        assertThat(historyList.get(2).id()).isEqualTo(first.id());
     }
 
     @Test
@@ -142,10 +142,10 @@ class PointHistoryRepositoryImplTest {
         pointHistoryRepository.save(1L, 1000L, TransactionType.CHARGE);
 
         // when
-        List<PointHistory> histories = pointHistoryRepository.findByUserId(nonExistentUserId);
+        List<PointHistory> historyList = pointHistoryRepository.findByUserId(nonExistentUserId);
 
         // then
-        assertThat(histories).isEmpty();
+        assertThat(historyList).isEmpty();
     }
 
     @Test
