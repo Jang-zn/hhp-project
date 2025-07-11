@@ -3,7 +3,8 @@ package io.hhplus.tdd.common;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.HttpInputMessage;
 import static org.assertj.core.api.Assertions.*;
 
 @DisplayName("ApiControllerAdvice 전역 예외 처리 테스트")
@@ -41,8 +42,8 @@ class ApiControllerAdviceTest {
     @DisplayName("HttpMessageNotReadableException 처리 테스트")
     void handleHttpMessageNotReadableException() {
         // given
-        org.springframework.http.converter.HttpMessageNotReadableException exception =
-            new org.springframework.http.converter.HttpMessageNotReadableException("파싱 에러", (org.springframework.http.HttpInputMessage) null);
+        HttpMessageNotReadableException exception =
+            new HttpMessageNotReadableException("파싱 에러", (HttpInputMessage) null);
         // when
         ResponseEntity<ErrorResponse> response = apiControllerAdvice.handleAll(exception);
         // then
