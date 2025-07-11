@@ -163,7 +163,7 @@ class PointServiceImplTest {
         }
 
         @Test
-        @DisplayName("성공(엣지케이스): 포인트 내역이 없는 유저 조회 시 빈 리스트를 반환한다")
+        @DisplayName("성공: 포인트 내역이 없는 유저 조회 시 빈 리스트를 반환한다")
         void getPointHistories_returnsEmptyList_whenNoHistoryExists() {
             // given: Repository 가 빈 리스트를 반환하도록 세팅 (이력 없음 시나리오)
             long userId = 1L;
@@ -175,38 +175,6 @@ class PointServiceImplTest {
 
             // then: 빈 리스트 반환 확인
             assertThat(result).isEmpty();
-        }
-
-        @Test
-        @DisplayName("실패: 최대 보유 포인트를 초과하면 MAX_POINT_LIMIT_EXCEEDED 예외")
-        void charge_throwsException_whenItExceedsMaxLimit() {
-            // given
-            long userId = 1L;
-            mockActiveUser(userId);
-            long currentPoint = MAX_POINT;
-            long chargeAmount = 1L;
-            mockUserPoint(userId, currentPoint);
-
-            // when & then
-            assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
-        }
-
-        @Test
-        @DisplayName("실패: 충전 금액이 최대 보유 포인트를 초과하는 경우 MAX_POINT_LIMIT_EXCEEDED 예외")
-        void charge_throwsException_whenAmountExceedsMaxPoint() {
-            // given
-            long userId = 1L;
-            mockActiveUser(userId);
-            long currentPoint = 1000L;
-            long chargeAmount = MAX_POINT + 1;
-            mockUserPoint(userId, currentPoint);
-
-            // when & then
-            assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
         }
 
         @Test
@@ -354,6 +322,42 @@ class PointServiceImplTest {
                 Arguments.of(2L, -200L, TransactionType.USE)
         );
     }
+
+
+    // ----- 실패 시나리오 ----- //
+
+    @Test
+    @DisplayName("실패: 최대 보유 포인트를 초과하면 MAX_POINT_LIMIT_EXCEEDED 예외")
+    void charge_throwsException_whenItExceedsMaxLimit() {
+        // given
+        long userId = 1L;
+        mockActiveUser(userId);
+        long currentPoint = MAX_POINT;
+        long chargeAmount = 1L;
+        mockUserPoint(userId, currentPoint);
+
+        // when & then
+        assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패: 충전 금액이 최대 보유 포인트를 초과하는 경우 MAX_POINT_LIMIT_EXCEEDED 예외")
+    void charge_throwsException_whenAmountExceedsMaxPoint() {
+        // given
+        long userId = 1L;
+        mockActiveUser(userId);
+        long currentPoint = 1000L;
+        long chargeAmount = MAX_POINT + 1;
+        mockUserPoint(userId, currentPoint);
+
+        // when & then
+        assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
+    }
+
 
     @ParameterizedTest
     @MethodSource("invalidIdPointHistoryArguments")
