@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.Arrays;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 class ApiControllerAdvice extends ResponseEntityExceptionHandler {
@@ -18,6 +19,13 @@ class ApiControllerAdvice extends ResponseEntityExceptionHandler {
             .orElse(ErrorCode.SYSTEM_ERROR);
         return ResponseEntity.badRequest().body(
             new ErrorResponse(matched.getCode(), matched.getMessage())
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body(
+            new ErrorResponse("400", "요청 파라미터 형식이 잘못되었습니다.")
         );
     }
 
