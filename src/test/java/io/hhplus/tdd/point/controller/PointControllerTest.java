@@ -119,7 +119,8 @@ class PointControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("null"))
             .andExpect(status().isBadRequest())
-            .andExpect(content().contentType("application/problem+json"));
+            .andExpect(jsonPath("$.code").value("400"))
+            .andExpect(jsonPath("$.message").value("요청 파라미터 형식이 잘못되었습니다."));
     }
 
     @Test
@@ -162,7 +163,8 @@ class PointControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("null"))
             .andExpect(status().isBadRequest())
-            .andExpect(content().contentType("application/problem+json"));
+            .andExpect(jsonPath("$.code").value("400"))
+            .andExpect(jsonPath("$.message").value("요청 파라미터 형식이 잘못되었습니다."));
     }
 
     @Test
