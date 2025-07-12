@@ -57,7 +57,7 @@ class PointServiceImplTest {
     // ----- 공통 헬퍼 메서드 ----- //
     /**
      * UserPoint 조회 Mock
-     * - userPointRepository.findById(userId) 호출 시 "현재 포인트가 point 인 UserPoint" 를 리턴하도록 세팅한다.
+     * - userPointRepository.findById(userId) 호출 시 현재 포인트가 point인 UserPoint 리턴하게 만듦
      */
     private void mockUserPoint(long userId, long point) {
         when(userPointRepository.findById(userId))
@@ -66,7 +66,7 @@ class PointServiceImplTest {
 
     /**
      * UserPoint 저장 Mock
-     * - userPointRepository.save(userId, pointAfter) 호출 시 "저장 후 포인트가 pointAfter 인 UserPoint" 를 리턴하도록 세팅한다.
+     * - userPointRepository.save(userId, pointAfter) 호출 시 저장 후 포인트가 pointAfter인 UserPoint 리턴하게 만듦
      */
     private void mockSavePoint(long userId, long pointAfter) {
         when(userPointRepository.save(userId, pointAfter))
@@ -75,7 +75,7 @@ class PointServiceImplTest {
 
     /**
      * PointHistory 저장 Mock
-     * - pointHistoryRepository.save(...) 호출 시 정상적으로 PointHistory 레코드를 리턴하도록 세팅한다.
+     * - pointHistoryRepository.save(...) 호출 시 정상적으로 PointHistory 레코드 리턴하게 만듦
      */
     private void mockHistorySaveSuccess(long userId, long amount, TransactionType type) {
         when(pointHistoryRepository.save(userId, amount, type))
@@ -84,6 +84,7 @@ class PointServiceImplTest {
 
     /**
      * Active User Mock
+     * - userRepository.findById(userId) 호출 시 ACTIVE 상태 User 리턴하게 만듦
      */
     private void mockActiveUser(long userId) {
         when(userRepository.findById(userId))
@@ -97,7 +98,7 @@ class PointServiceImplTest {
         @Test
         @DisplayName("성공: 포인트를 성공적으로 충전한다")
         void charge_success() {
-            // given: 유저(1)의 보유 포인트가 1,000일 때 500원을 충전해 1,500원이 되도록 Mock 세팅
+            //given: 유저(1) 보유 포인트 1,000, 500 충전해서 1,500 되게 mock 세팅함
             long userId = 1L;
             long currentPoint = 1000L;
             long chargeAmount = 500L;
@@ -108,10 +109,10 @@ class PointServiceImplTest {
             mockSavePoint(userId, expectedPoint);
             mockHistorySaveSuccess(userId, chargeAmount, TransactionType.CHARGE);
 
-            // when: charge 호출
+            //when: charge 호출함
             UserPoint result = pointService.charge(userId, chargeAmount);
 
-            // then: 저장 결과 및 Repository 호출 검증
+            //then: 저장 결과랑 repository 호출 검증함
             assertThat(result.id()).isEqualTo(userId);
             assertThat(result.point()).isEqualTo(expectedPoint);
             verify(userPointRepository).save(userId, expectedPoint);
@@ -121,7 +122,7 @@ class PointServiceImplTest {
         @Test
         @DisplayName("성공: 포인트를 성공적으로 사용한다")
         void use_success() {
-            // given: 유저(1)의 보유 포인트가 1,000일 때 400원을 사용해 600원이 되도록 Mock 세팅
+            //given: 유저(1) 보유 포인트 1,000, 400 사용해서 600 되게 mock 세팅함
             long userId = 1L;
             long currentPoint = 1000L;
             long useAmount = 400L;
@@ -132,10 +133,10 @@ class PointServiceImplTest {
             mockSavePoint(userId, expectedPoint);
             mockHistorySaveSuccess(userId, useAmount, TransactionType.USE);
 
-            // when: use 호출
+            //when: use 호출함
             UserPoint result = pointService.use(userId, useAmount);
 
-            // then: 결과 및 저장/이력 기록 검증
+            //then: 결과랑 저장/이력 기록 검증함
             assertThat(result.id()).isEqualTo(userId);
             assertThat(result.point()).isEqualTo(expectedPoint);
             verify(userPointRepository).save(userId, expectedPoint);
@@ -145,7 +146,7 @@ class PointServiceImplTest {
         @Test
         @DisplayName("성공: 특정 유저의 포인트 내역을 조회한다")
         void getPointHistories_success() {
-            // given: 2개의 Mock PointHistory 리스트를 준비하여 Repository가 반환하도록 세팅
+            //given: 2개짜리 mock PointHistory 리스트를 repository가 반환하게 세팅함
             long userId = 1L;
             mockActiveUser(userId);
             List<PointHistory> mockHistories = List.of(
@@ -154,10 +155,10 @@ class PointServiceImplTest {
             );
             when(pointHistoryRepository.findByUserId(userId)).thenReturn(mockHistories);
 
-            // when: 서비스로 이력 조회 호출
+            //when: 서비스로 이력 조회 호출함
             List<PointHistory> result = pointService.getPointHistoryList(userId);
 
-            // then: 리턴된 리스트가 Mock 과 동일한지 검증
+            //then: 리턴된 리스트가 mock이랑 같은지 검증함
             assertThat(result).isEqualTo(mockHistories);
             verify(pointHistoryRepository).findByUserId(userId);
         }
@@ -165,22 +166,22 @@ class PointServiceImplTest {
         @Test
         @DisplayName("성공: 포인트 내역이 없는 유저 조회 시 빈 리스트를 반환한다")
         void getPointHistories_returnsEmptyList_whenNoHistoryExists() {
-            // given: Repository 가 빈 리스트를 반환하도록 세팅 (이력 없음 시나리오)
+            //given: repository가 빈 리스트 반환하게 세팅함(이력 없음 시나리오)
             long userId = 1L;
             mockActiveUser(userId);
             when(pointHistoryRepository.findByUserId(userId)).thenReturn(Collections.emptyList());
 
-            // when: 이력 조회 호출
+            //when: 이력 조회 호출함
             List<PointHistory> result = pointService.getPointHistoryList(userId);
 
-            // then: 빈 리스트 반환 확인
+            //then: 빈 리스트 반환하는지 확인함
             assertThat(result).isEmpty();
         }
 
         @Test
         @DisplayName("성공: 여러 스레드가 동시에 같은 userId로 요청해도 1건만 처리되고, 나머지는 중복 요청 에러가 발생한다")
         void concurrentCharge_sameUserId_onlyOneProcessed() throws Exception {
-            // given: 동시 요청 환경, Mock 및 상태 준비
+            //given: 동시 요청 환경, mock 및 상태 준비함
             int threadCount = 10; // 동시에 보낼 요청 개수
             long userId = 1L;
             long chargeAmount = 100L;
@@ -192,7 +193,7 @@ class PointServiceImplTest {
             mockActiveUser(userId); // 유저 활성화 Mock
             mockHistorySaveSuccess(userId, chargeAmount, TransactionType.CHARGE); // 이력 저장 Mock
 
-            // when: 여러 스레드가 동시에 charge 요청을 보냄
+            //when: 여러 스레드가 동시에 charge 요청 보냄
             ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 스레드풀 생성
             CountDownLatch readyLatch = new CountDownLatch(threadCount); // 모든 스레드 준비 동기화
             CountDownLatch startLatch = new CountDownLatch(1); // 동시에 시작 신호
@@ -218,7 +219,7 @@ class PointServiceImplTest {
             doneLatch.await(); // 모든 작업 종료 대기
             executor.shutdown(); // 스레드풀 종료
 
-            // then: 1건만 성공(UserPoint), 나머지는 중복 요청 에러(Exception)여야 함
+            //then: 1건만 성공(UserPoint), 나머지는 중복 요청 에러(Exception)여야 함
             long successCount = results.stream().filter(f -> {
                 try { return f.get() instanceof UserPoint; } catch (Exception e) { return false; }
             }).count();
@@ -238,7 +239,7 @@ class PointServiceImplTest {
         @Test
         @DisplayName("성공: 여러 userId가 동시에 요청해도 각 userId별로 1건만 처리되고, 나머지는 중복 요청 에러가 발생한다")
         void concurrentCharge_multiUserId_onlyOnePerUserProcessed() throws Exception {
-            // given: 여러 userId, 동시 요청 환경, Mock 및 상태 준비
+            //given: 여러 userId, 동시 요청 환경, mock 및 상태 준비함
             int user1Count = 10; // user1로 보낼 요청 개수
             int user2Count = 5;  // user2로 보낼 요청 개수
             long user1 = 1L, user2 = 2L;
@@ -260,7 +261,7 @@ class PointServiceImplTest {
             for (int i = 0; i < user1Count; i++) userIds.add(user1);
             for (int i = 0; i < user2Count; i++) userIds.add(user2);
 
-            // when: 여러 userId가 동시에 charge 요청을 보냄
+            //when: 여러 userId가 동시에 charge 요청 보냄
             ExecutorService executor = Executors.newFixedThreadPool(userIds.size());
             CountDownLatch readyLatch = new CountDownLatch(userIds.size());
             CountDownLatch startLatch = new CountDownLatch(1);
@@ -286,7 +287,7 @@ class PointServiceImplTest {
             doneLatch.await(); // 모든 작업 종료 대기
             executor.shutdown(); // 스레드풀 종료
 
-            // then: 각 userId별로 1건만 성공(UserPoint), 나머지는 중복 요청 에러(Exception)여야 함
+            //then: 각 userId별로 1건만 성공(UserPoint), 나머지는 중복 요청 에러(Exception)여야 함
             long user1Success = 0, user2Success = 0, user1Dup = 0, user2Dup = 0;
             for (int i = 0; i < results.size(); i++) {
                 Long uid = userIds.get(i);
@@ -329,14 +330,14 @@ class PointServiceImplTest {
     @Test
     @DisplayName("실패: 최대 보유 포인트를 초과하면 MAX_POINT_LIMIT_EXCEEDED 예외")
     void charge_throwsException_whenItExceedsMaxLimit() {
-        // given
+        //given
         long userId = 1L;
         mockActiveUser(userId);
         long currentPoint = MAX_POINT;
         long chargeAmount = 1L;
         mockUserPoint(userId, currentPoint);
 
-        // when & then
+        //when & then
         assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
@@ -345,14 +346,14 @@ class PointServiceImplTest {
     @Test
     @DisplayName("실패: 충전 금액이 최대 보유 포인트를 초과하는 경우 MAX_POINT_LIMIT_EXCEEDED 예외")
     void charge_throwsException_whenAmountExceedsMaxPoint() {
-        // given
+        //given
         long userId = 1L;
         mockActiveUser(userId);
         long currentPoint = 1000L;
         long chargeAmount = MAX_POINT + 1;
         mockUserPoint(userId, currentPoint);
 
-        // when & then
+        //when & then
         assertThatThrownBy(() -> pointService.charge(userId, chargeAmount))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(ErrorCode.MAX_POINT_LIMIT_EXCEEDED.getMessage());
@@ -385,14 +386,14 @@ class PointServiceImplTest {
     @Test
     @DisplayName("실패: 잔액보다 큰 금액 사용 요청 시 INSUFFICIENT_POINT 예외")
     void use_throwsException_whenBalanceIsInsufficient() {
-        // given
+        //given
         long userId = 1L;
         mockActiveUser(userId);
         long currentPoint = 100L;
         long useAmount = 200L;
         mockUserPoint(userId, currentPoint);
         
-        // when & then
+        //when & then
         assertThatThrownBy(() -> pointService.use(userId, useAmount))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(ErrorCode.INSUFFICIENT_POINT.getMessage());
@@ -402,7 +403,7 @@ class PointServiceImplTest {
     @MethodSource("transactionType")
     @DisplayName("실패: 포인트 이력 저장 실패 시 SYSTEM_ERROR 예외")
     void chargeOrUse_throwsException_whenHistorySaveFails(TransactionType type) {
-        // given
+        //given
         long userId = 1L;
         mockActiveUser(userId);
         long currentPoint = 1000L;
@@ -411,7 +412,7 @@ class PointServiceImplTest {
         when(pointHistoryRepository.save(anyLong(), anyLong(), any()))
                 .thenThrow(new RuntimeException("DB error"));
 
-        // when & then
+        //when & then
         assertThatThrownBy(() -> {
             if (type == TransactionType.CHARGE) pointService.charge(userId, amount);
             else pointService.use(userId, amount);
@@ -423,12 +424,12 @@ class PointServiceImplTest {
     @MethodSource("transactionType")
     @DisplayName("실패: 조회된 사용자의 포인트가 음수면 DATA_INTEGRITY_VIOLATED 예외")
     void chargeOrUse_throwsException_whenPointIsNegative(TransactionType type) {
-        // given
+        //given
         long userId = 1L;
         mockActiveUser(userId);
         mockUserPoint(userId, -100L); // 데이터 손상 시나리오
 
-        // when & then
+        //when & then
         assertThatThrownBy(() -> {
             if (type == TransactionType.CHARGE) pointService.charge(userId, 100L);
             else pointService.use(userId, 50L);
@@ -440,11 +441,11 @@ class PointServiceImplTest {
     @MethodSource("transactionType")
     @DisplayName("실패: DB에 존재하지 않는 유저면 USER_NOT_FOUND 예외")
     void chargeOrUse_throwsException_whenUserNotFound(TransactionType type) {
-        // given
+        //given
         long userId = 999L;
         when(userRepository.findById(userId)).thenReturn(null);
 
-        // when & then
+        //when & then
         assertThatThrownBy(() -> {
             if (type == TransactionType.CHARGE) pointService.charge(userId, 100L);
             else pointService.use(userId, 50L);

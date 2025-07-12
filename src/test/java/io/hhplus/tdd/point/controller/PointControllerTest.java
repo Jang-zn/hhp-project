@@ -56,6 +56,7 @@ class PointControllerTest {
 
     @BeforeEach 
     void resetRateLimitMap() throws Exception {
+        //given: rateLimitMap 초기화해서 테스트 간 영향 없게 함
         Field field = PointController.class.getDeclaredField("rateLimitMap");
         field.setAccessible(true);
         ((java.util.concurrent.ConcurrentHashMap<?, ?>) field.get(pointController)).clear();
@@ -64,31 +65,32 @@ class PointControllerTest {
     @Test
     @DisplayName("성공: 유저의 포인트를 정상적으로 조회한다")
     void getPoint() throws Exception {
-        // given
+        //given: 유저 id, 포인트 준비하고 mock 세팅함
         long userId = 1L;
         long amount = 1000L;
         UserPoint expectedUserPoint = new UserPoint(userId, amount, System.currentTimeMillis());
         given(pointService.getPoint(userId)).willReturn(expectedUserPoint);
 
-        // when & then
+        //when: 포인트 조회 요청 보냄
         mockMvc.perform(get("/point/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.point").value(amount));
 
+        //then: 서비스 호출 검증함
         verify(pointService).getPoint(userId);
     }
 
     @Test
     @DisplayName("성공: 포인트를 정상적으로 충전한다")
     void chargePoint() throws Exception {
-        // given
+        //given: 유저 id, 충전 금액, mock 세팅함
         long userId = 1L;
         long amountToCharge = 500L;
         UserPoint chargedUserPoint = new UserPoint(userId, 1500L, System.currentTimeMillis());
         given(pointService.charge(userId, amountToCharge)).willReturn(chargedUserPoint);
 
-        // when & then
+        //when: 포인트 충전 요청 보냄
         mockMvc.perform(patch("/point/{id}/charge", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(amountToCharge)))
@@ -96,6 +98,7 @@ class PointControllerTest {
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.point").value(chargedUserPoint.point()));
 
+        //then: 서비스 호출 검증함
         verify(pointService).charge(userId, amountToCharge);
     }
 

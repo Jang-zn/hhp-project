@@ -28,18 +28,19 @@ class UserIntegrationTest {
     @Test
     @DisplayName("성공: 유저 생성/조회")
     void userDomain_integration_success() throws Exception {
-        // 유저 생성
+        //given: 유저 이름 준비함
         String name = "TestUser";
+        //when: 유저 생성 요청 보냄
         String createRes = mockMvc.perform(post("/user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"" + name + "\"}"))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value(name))
             .andReturn().getResponse().getContentAsString();
-
+        //then: 생성된 유저 id 추출함
         long userId = objectMapper.readTree(createRes).get("id").asLong();
 
-        // 유저 조회
+        //when: 유저 조회 요청 보냄
         mockMvc.perform(get("/user/" + userId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userId))
@@ -49,6 +50,7 @@ class UserIntegrationTest {
     @Test
     @DisplayName("실패케이스: 없는 유저")
     void userNotFound_fail() throws Exception {
+        //when: 없는 유저 id로 조회 요청 보냄
         mockMvc.perform(get("/user/99999"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").doesNotExist());
@@ -57,6 +59,7 @@ class UserIntegrationTest {
     @Test
     @DisplayName("실패케이스: 빈 이름")
     void createUser_emptyName_fail() throws Exception {
+        //when: 빈 이름으로 유저 생성 요청 보냄
         mockMvc.perform(post("/user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\"}"))

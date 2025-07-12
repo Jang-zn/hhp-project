@@ -15,11 +15,11 @@ class ApiControllerAdviceTest {
     @Test
     @DisplayName("일반 예외 처리 테스트")
     void handleGeneralException() {
-        // given
+        //given: RuntimeException 발생시킴
         Exception exception = new RuntimeException("테스트 예외");
-        // when
+        //when: 예외 처리 핸들러 호출함
         ResponseEntity<ErrorResponse> response = apiControllerAdvice.handleAll(exception);
-        // then
+        //then: 500 에러 코드와 기본 메시지 반환하는지 검증함
         assertThat(response.getStatusCode().value()).isEqualTo(500);
         assertThat(response.getBody().code()).isEqualTo("500");
         assertThat(response.getBody().message()).isEqualTo("에러가 발생했습니다.");
@@ -28,11 +28,11 @@ class ApiControllerAdviceTest {
     @Test
     @DisplayName("IllegalArgumentException 처리 테스트")
     void handleIllegalArgumentException() {
-        // given
+        //given: IllegalArgumentException 발생시킴
         IllegalArgumentException exception = new IllegalArgumentException("이름은 1자 이상이어야 합니다.");
-        // when
+        //when: 예외 처리 핸들러 호출함
         ResponseEntity<ErrorResponse> response = apiControllerAdvice.handleAll(exception);
-        // then
+        //then: 400 에러 코드와 커스텀 메시지 반환하는지 검증함
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         assertThat(response.getBody().code()).isEqualTo("U004");
         assertThat(response.getBody().message()).isEqualTo("이름은 1자 이상이어야 합니다.");
@@ -41,12 +41,12 @@ class ApiControllerAdviceTest {
     @Test
     @DisplayName("HttpMessageNotReadableException 처리 테스트")
     void handleHttpMessageNotReadableException() {
-        // given
+        //given: HttpMessageNotReadableException 발생시킴
         HttpMessageNotReadableException exception =
             new HttpMessageNotReadableException("파싱 에러", (HttpInputMessage) null);
-        // when
+        //when: 예외 처리 핸들러 호출함
         ResponseEntity<ErrorResponse> response = apiControllerAdvice.handleAll(exception);
-        // then
+        //then: 400 에러 코드와 파라미터 형식 에러 메시지 반환하는지 검증함
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         assertThat(response.getBody().code()).isEqualTo("400");
         assertThat(response.getBody().message()).isEqualTo("요청 파라미터 형식이 잘못되었습니다.");

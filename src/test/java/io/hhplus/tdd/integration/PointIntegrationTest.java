@@ -26,22 +26,25 @@ class PointIntegrationTest {
     private ObjectMapper objectMapper;
 
     private long createUser(String name) throws Exception {
+        //given: 유저 생성 요청 보냄
         String res = mockMvc.perform(post("/user")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"" + name + "\"}"))
             .andExpect(status().isCreated())
             .andReturn().getResponse().getContentAsString();
+        //then: 생성된 유저 id 반환함
         return objectMapper.readTree(res).get("id").asLong();
     }
 
     @Test
     @DisplayName("성공: 포인트 충전/사용/조회/이력")
     void pointDomain_integration_success() throws Exception {
+        //given: 유저 생성하고, 충전/사용 금액 준비함
         long userId = createUser("TestUser");
         long charge = 1000L;
         long use = 400L;
 
-        // 충전
+        //when: 포인트 충전 요청
         mockMvc.perform(patch("/point/{id}/charge", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(charge)))
@@ -49,7 +52,7 @@ class PointIntegrationTest {
             .andExpect(jsonPath("$.id").value(userId))
             .andExpect(jsonPath("$.point").value(charge));
 
-        // 사용
+        //when: 포인트 사용 요청
         mockMvc.perform(patch("/point/{id}/use", userId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(use)))
@@ -57,13 +60,13 @@ class PointIntegrationTest {
             .andExpect(jsonPath("$.id").value(userId))
             .andExpect(jsonPath("$.point").value(charge - use));
 
-        // 조회
+        //when: 포인트 조회 요청
         mockMvc.perform(get("/point/{id}", userId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(userId))
             .andExpect(jsonPath("$.point").value(charge - use));
 
-        // 이력
+        //when: 포인트 이력 조회 요청
         mockMvc.perform(get("/point/{id}/histories", userId))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].userId").value(userId))
